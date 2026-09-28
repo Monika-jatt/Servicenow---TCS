@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_taair_code_sync.UpdateSetExportUtil</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <mobile_callable>false</mobile_callable>
+        <name>UpdateSetExportUtil</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var UpdateSetExportUtil = Class.create();
+UpdateSetExportUtil.prototype = {
+    initialize: function() {
+    },
+	
+	// This is being called by the cloning workflow in DataCenter (onlyIncludeCompletedChildren=false) so that they can preserve non-completed update sets before cloning
+    onlyIncludeCompletedChildren: true,
+	
+	exportUpdateSet: function(current, baseUpdateSetId, parentId) {
+		var retrievedUpdateSet = new GlideRecord('sys_remote_update_set');
+		retrievedUpdateSet.initialize();
+
+		retrievedUpdateSet.description = current.description;
+		retrievedUpdateSet.name = current.name;
+		retrievedUpdateSet.release_date = current.release_date;
+		retrievedUpdateSet.remote_sys_id = current.sys_id;
+		retrievedUpdateSet.application = current.application;
+		retrievedUpdateSet.remote_base_update_set = baseUpdateSetId;
+		retrievedUpdateSet.parent = parentId; 
+
+		var scopeGr = new GlideRecord('sys_scope');
+		scopeGr.get(current.application);
+		if (scopeGr.isValid()) {
+			retrievedUpdateSet.application_name = scopeGr.name;
+			retrievedUpdateSet.application_scope = scopeGr.scope;
+			retrievedUpdateSet.application_version = scopeGr.version;
+		} 
+
+		if (current.parent.nil())
+			retrievedUpdateSet.state = "loaded";
+		else
+			retrievedUpdateSet.state = "in_hierarchy";
+
+		retrievedUpdateSet.setWorkflow(false);
+		var retrievedUpdateSetSysId = retrievedUpdateSet.insert();
+
+		var update = new GlideRecord('sys_update_xml');
+		update.addQuery('update_set', current.sys_id);
+		update.query();
+
+		while(update.next()) {
+		   update.remote_update_set = retrievedUpdateSet.sys_id;
+		   update.update_set = '';
+		   update.insert();
+		}
+		
+		return retrievedUpdateSetSysId;
+	},
+	
+	exportHierarchy: function(current) {
+		var baseUpdateSetId = this.exportUpdateSet(current, "", "");
+		//Set the batch base value since its unavailable on insert
+		var baseUpdateSet = new GlideRecord("sys_remote_update_set");
+		baseUpdateSet.get(baseUpdateSetId);
+		baseUpdateSet.remote_base_update_set= baseUpdateSetId;
+		baseUpdateSet.setWorkflow(false);
+		baseUpdateSet.update();
+		
+		this._processChildren(baseUpdateSetId, current.sys_id, baseUpdateSetId);
+		
+		return baseUpdateSetId;
+	},
+	
+	_processChildren: function(baseUpdateSetId, parentId, remoteParentId) {
+		var updateSet = new GlideRecord('sys_update_set');
+		updateSet.addQuery("parent", parentId);
+		if(this.onlyIncludeCompletedChildren == true)
+			updateSet.addQuery("state", "complete");
+		updateSet.query();
+		while(updateSet.next()) {
+			var remoteId = this.exportUpdateSet(updateSet, baseUpdateSetId, remoteParentId);
+			this._processChildren(baseUpdateSetId, updateSet.sys_id, remoteId);
+		}
+	},
+	
+    type: 'UpdateSetExportUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>alok.sharma</sys_created_by>
+        <sys_created_on>2026-06-17 05:27:15</sys_created_on>
+        <sys_id>56fa45d92ba5475016f8f0aef291bfd7</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>UpdateSetExportUtil</sys_name>
+        <sys_package display_value="Code Sync" source="x_taair_code_sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Code Sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_scope>
+        <sys_update_name>sys_script_include_56fa45d92ba5475016f8f0aef291bfd7</sys_update_name>
+        <sys_updated_by>alok.sharma</sys_updated_by>
+        <sys_updated_on>2026-06-17 05:29:24</sys_updated_on>
+    </sys_script_include>
+    <sys_es_latest_script action="INSERT_OR_UPDATE">
+        <id>56fa45d92ba5475016f8f0aef291bfd7</id>
+        <sys_created_by>alok.sharma</sys_created_by>
+        <sys_created_on>2026-06-18 09:20:15</sys_created_on>
+        <sys_id>011a8fa12b2d0f50c4d0f7d54391bf6c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>alok.sharma</sys_updated_by>
+        <sys_updated_on>2026-06-18 09:20:15</sys_updated_on>
+        <table>sys_script_include</table>
+        <use_es_latest>true</use_es_latest>
+    </sys_es_latest_script>
+</record_update>

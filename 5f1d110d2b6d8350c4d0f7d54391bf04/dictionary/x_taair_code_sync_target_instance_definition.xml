@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="enforce_dot_walk_cross_scope_access=true" db_object_id="0b0fd9852bad8350c4d0f7d54391bfd6" label="Target Instance Definition" max_length="40" name="x_taair_code_sync_target_instance_definition" type="collection">
+        <element label="Password" max_length="255" name="password" type="password2"/>
+        <element label="Target Instance" max_length="1024" name="target_instance" type="url"/>
+        <element label="User Name" max_length="40" name="user_name" type="string"/>
+    </element>
+</database>

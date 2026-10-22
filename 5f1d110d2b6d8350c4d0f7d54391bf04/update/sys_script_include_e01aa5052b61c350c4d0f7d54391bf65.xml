@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_taair_code_sync.SyncUpdateSetMigrationUtil</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <mobile_callable>false</mobile_callable>
+        <name>SyncUpdateSetMigrationUtil</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var SyncUpdateSetMigrationUtil = Class.create();
+SyncUpdateSetMigrationUtil.prototype = {
+    initialize: function() {
+        this.updateSetSYSID = '';
+        this.localUpdateSetID = '';
+        this.targetInstance = '';
+    },
+
+    syncUpdateSet: function(updateSetSYSID, targetInstance) {
+        this.updateSetSYSID = updateSetSYSID;
+        this.targetInstance = targetInstance;
+        this.exportUpdateSet();
+        this.executeSync();
+    },
+
+    exportUpdateSet: function() {
+        var grSysUpdateSet = new GlideRecord("sys_update_set");
+        if (grSysUpdateSet.get(this.updateSetSYSID)) {
+            var updateSetExport = new x_taair_code_sync.UpdateSetExportUtil();
+            this.localUpdateSetID = updateSetExport.exportUpdateSet(grSysUpdateSet);
+        }
+    },
+
+    executeSync: function() {
+
+        var gr = new GlideRecord("x_taair_code_sync_target_instance_definition");
+        //gr.addQuery("name", "value");
+        gr.query();
+        if (gr.next()) {
+
+			var targetInstanceURL = gr.getValue('target_instance');
+			var user = gr.getValue('user_name');
+            var password = gr.getValue('password');
+
+            var request = new sn_ws.RESTMessageV2();
+            request.setEndpoint(targetInstanceURL+'/api/x_tcsfs_code_syn_0/code_sync_consumer/load');
+            request.setHttpMethod('POST');
+
+            
+
+            request.setBasicAuth(user, password);
+            request.setRequestHeader("Accept", "application/json");
+            request.setRequestHeader('Content-Type', 'application/json');
+
+            payloadBody = this.generateXML();
+            request.setRequestBody(payloadBody);
+            var response = request.execute();
+            gs.log(response.getBody());
+
+        }
+
+    },
+
+    generateXML: function() {
+
+        // Define target configuration
+        var tableName = 'sys_remote_update_set';
+        var recordSysId = this.localUpdateSetID;
+
+        var gr = new GlideRecord(tableName);
+        if (gr.get(recordSysId)) {
+            // Create an XML document with a custom root element
+            var xmlDoc = new GlideXMLDocument('unload');
+            var unloadDate = new GlideDateTime();
+            xmlDoc.getDocumentElement().setAttribute('unload_date', unloadDate);
+
+            // Create a node element for the record
+            var recordNode = xmlDoc.createElement(tableName);
+            recordNode.setAttribute('action', 'INSERT_OR_UPDATE');
+
+            xmlDoc.getDocumentElement().appendChild(recordNode);
+
+            // Get all available fields on the record
+            var fields = gr.getFields();
+
+            for (var i = 0; i < fields.size(); i++) {
+                var field = fields.get(i);
+                var fieldName = field.getName();
+                fieldName = (fieldName == 'sys_tags') ? 'sys_id' : fieldName;
+                var fieldValue = gr.getValue(fieldName);
+
+                // Skip fields that don't contain data
+                if (fieldValue) {
+                    var fieldNode = xmlDoc.createElement(fieldName);
+                    fieldNode.setTextContent(fieldValue);
+                    recordNode.appendChild(fieldNode);
+                }
+            }
+
+            ///////////////////////////////////////////////////
+            //=7ad85fe82b29cb10c4d0f7d54391bfd4
+            var sysUpdateXMLTable = "sys_update_xml";
+            var grXML = new GlideRecord(sysUpdateXMLTable);
+            grXML.addQuery("remote_update_set", recordSysId);
+            grXML.query();
+            while (grXML.next()) {
+
+                var recordNodeXML = xmlDoc.createElement(sysUpdateXMLTable);
+                recordNodeXML.setAttribute('action', 'INSERT_OR_UPDATE');
+
+                xmlDoc.getDocumentElement().appendChild(recordNode);
+
+                // Get all available fields on the record
+                fields = grXML.getFields();
+
+
+                for (i = 0; i < fields.size(); i++) {
+                    var field = fields.get(i);
+                    var fieldName = field.getName();
+                    fieldName = (fieldName == 'sys_tags') ? 'sys_id' : fieldName;
+                    var fieldValue = grXML.getValue(fieldName);
+
+                    // Skip fields that don't contain data
+                    if (fieldValue) {
+                        var fieldNodeXML = xmlDoc.createElement(fieldName);
+                        fieldNodeXML.setTextContent(fieldValue);
+                        recordNodeXML.appendChild(fieldNodeXML);
+                    }
+                }
+
+            }
+
+            // Convert the constructed document to an XML String
+            var xmlString = xmlDoc.toString();
+            gs.info('Generated XML String:\n' + xmlString);
+            return xmlString;
+        } else {
+            gs.error('Record not found for sys_id: ' + recordSysId);
+        }
+
+
+    },
+
+    type: 'SyncUpdateSetMigrationUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>alok.sharma</sys_created_by>
+        <sys_created_on>2026-06-16 13:04:58</sys_created_on>
+        <sys_id>e01aa5052b61c350c4d0f7d54391bf65</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>SyncUpdateSetMigrationUtil</sys_name>
+        <sys_package display_value="Code Sync" source="x_taair_code_sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Code Sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_scope>
+        <sys_update_name>sys_script_include_e01aa5052b61c350c4d0f7d54391bf65</sys_update_name>
+        <sys_updated_by>alok.sharma</sys_updated_by>
+        <sys_updated_on>2026-06-17 05:51:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

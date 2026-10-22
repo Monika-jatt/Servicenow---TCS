@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="enforce_dot_walk_cross_scope_access=true" db_object_id="462129cd2bad8350c4d0f7d54391bfdf" label="Sync Update Set" max_length="40" name="x_taair_code_sync_sync_update_set" type="collection">
+        <element label="State" max_length="40" name="state" type="string"/>
+        <element label="Target Instance Definition" max_length="32" name="target_instance_definition" reference="x_taair_code_sync_target_instance_definition" type="reference"/>
+        <element label="Update Set" max_length="32" name="update_set" reference="sys_update_set" type="reference"/>
+        <index name="index">
+            <element name="target_instance_definition"/>
+        </index>
+        <index name="index2">
+            <element name="update_set"/>
+        </index>
+    </element>
+</database>

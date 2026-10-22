@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege">
+    <sys_scope_privilege action="INSERT_OR_UPDATE">
+        <operation>execute</operation>
+        <source_scope display_value="Code Sync">5f1d110d2b6d8350c4d0f7d54391bf04</source_scope>
+        <status>allowed</status>
+        <sys_class_name>sys_scope_privilege</sys_class_name>
+        <sys_created_by>udit.hasija</sys_created_by>
+        <sys_created_on>2026-08-12 13:22:15</sys_created_on>
+        <sys_id>cae0d31f2ba6cf54c4d0f7d54391bf9c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>GlideRecord.setValue</sys_name>
+        <sys_package display_value="Code Sync" source="x_taair_code_sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Code Sync">5f1d110d2b6d8350c4d0f7d54391bf04</sys_scope>
+        <sys_update_name>sys_scope_privilege_cae0d31f2ba6cf54c4d0f7d54391bf9c</sys_update_name>
+        <sys_updated_by>udit.hasija</sys_updated_by>
+        <sys_updated_on>2026-08-12 13:22:15</sys_updated_on>
+        <target_name>GlideRecord.setValue</target_name>
+        <target_scope display_value="Global">global</target_scope>
+        <target_type>scriptable</target_type>
+    </sys_scope_privilege>
+</record_update>
